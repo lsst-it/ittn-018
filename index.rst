@@ -191,7 +191,7 @@ The use-case for non-ACI switch to extend the ACI topology directly in L2 is tha
 
 * **Cisco IE-4000-4GC4GP4G-E:** Extended leaf switch for outdoor industrial uses outside the summit computer room where control network access is needed, providing 12 ports with a distribution of 4 combo 1000BASE-T or 1G SFP ports for uplinks to the border leafs, 4 fixed 1000BASE-T and 4 1000BASE-T with PoE. This particular model is foreseen to be used in small outdoor cabinets such as the calibration hill Weather Tower, All-Sky Camera cabinet, and the main generator hut.
 
-.. figure:: /_static/IE4000.JPG
+.. figure:: /_static/IE4000.jpg
     :name: IE 4000
     :width: 400 px
 
@@ -242,7 +242,117 @@ The **Core Layer**, also known as the **Core Network**, is the backbone of the l
 The **Distribution/Access layer**, also known as the **Campus Network**, is the aggregation layer for all the feature-rich access switches providing services to end-users: laptops, desktops, printers, IP phones, access points, etc... The campus Networks are defined in the distribution switches and announced to the core using OSPF, all routing between these networks occur in the distribution switches, the access switches are only used as layer 2 bridges even if they have layer 3 capabilities, no proxy-arp is implemented nor needed at this level.
 
 The **WAN Edge**, also known as the **Inter-Site Network**, is the layer where are the links going to the summit, NOIR Lab, and NCSA are present, most (if not all) of them are directly connected to the Core Network. This layer interacts directly with the Rubin Observatory DWDM, to get a pair of 100G links to the summit for connecting the core routers at each site together for an optional ACI "multi-pod" setup. It also interacts with the NOIR Lab DWDM to get a pair of 10G links to the summit for the same purpose but for general traffic routing (both control and campus) via an alternative physical route (i.e. the Pachon's communication caseta), and it does indirectly interact with REUNA's DWDM via the Rubin Observatory Border Router, which will provide the 100G link via the Long-Haul Network (LHN) to NCSA for dedicated image data transfer. Please note there's an optional firewall in the diagram for this connection, which is specified only if needed as the LHN BGP peering should be private, and considered secure in general terms. Additional measures will be implemented to secure this BGP peering as to not need a firewall there, given the challenges it brings due to the need for BGP support, SFP+ ports, and near-10G firewall throughput. Please also note that if such a firewall is implemented, its scope is only to filter the Control Network traffic crossing the LHN towards NCSA, as the forwarders will be directly connected to the Rubin Observatory Border Router. The details of the LHN setup are covered in LSE-78.
+
+Summit Site - Cerro Pachon
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. figure:: /_static/MainNet-phydiag-HLD-Physical-General-CP.jpg
+    :name: Physical Desgin CP
+    :width: 1000 px
     
+The summit network design follows a very similar pattern to the base which is evident by looking at the diagrams, with major differences only on the upper layers of the design as firewalls are not broadly needed since the site depends on the base network for extranet access. Please note that the aliases to each layer (e.g. Core Network, Campus Network, Control Network, etc...) are also valid for the summit and used interchangeably with its associated layer name, also due to this fact and having described the layers in detail on section 3.2.1, the descriptions for each network in this section will be kept to a minimum.
+
+The first layer of the summit network is the **WAN Edge** which receives all the links coming from the base network and eventually from NOIR Lab networks, directly into the core switches. The **Core Layer** is tightly coupled to the WAN Edge as it implements it entirely in this case, and just like at the base site, it is composed of 2 Nexus switches in NX-OS mode doing purely layer 3 routing with BGP towards the WAN Edge and the Control Network, and OSPF to the Campus Network.
+
+The **Distribution/Access** Layer or **Campus Network** is an exact match to its base site counterpart with differences in switch models and implementing a firewall to filter local guest networks.
+
+The **Datacenter Layer** or **Control Network** is as well an exact match to its base site counterpart with differences in switch models but always keeping Cisco ACI as the core technology behind the fabric implementation. The Control Network has an **out-of-band (OOB)** non-ACI layer 2 extension just like at the base known as the OOB network, but it also contains an additional non-ACI layer 2 extension which is a direct extension of the Control Network in terms of policies (unlike the OOB network) and therefore referred by such name; in the diagram, it is shown as **Industrial Layer**, due to the presence of mostly industrial-rated switches which will be implemented outdoors or in heavy industrial areas such as the level 1 utility area, the level 3 integration area, and levels 5 to 7, including all the switches inside the cabinets of the Telescope Mount Assembly (TMA).
+
+Summit to Base WAN - Layer 3
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The diagram below, while still very high-level, provides insights as to how the layer 3 layout between the summit and base sites should look like by the commissioning period. The core switches are directly connected to each other with 10G/100G links and using BGP to share routes, each site having its own private Autonomous System Number (ASN). The low-level design should be rather simple and avoid unnecessary routing clutter. There's a backup link that may be provided by NOIR Lab using its microwave links between Cerro Pachon and Tololo, to La Serena. The design should consider what NOIR lab can provide for this implementation, which can range from a spanned VLAN between the sites to a dedicated or shared VRF. Considering the lack of technical details for such link at the time of this writing, we will consider the simplest option which is a shared VRF at each site with a loan IP address from NOIR Lab's IP range, and the implementation of a GRE tunnel to cross their network to avoid routing complications, and also to allow us to modify the BGP metric to learn routes through this tunnel as a backup. Given the limited availability of network infrastructure and fiber optic links between the Summit's computer room and NOIR Lab's closest network distribution point (Pachon's communication caseta), the baseline is a single link connecting the first core switch at each site together.
+
+.. figure:: /_static/MainNet-phydiag-HLD-Physical-L3-WAN.jpg
+    :name: WAN L3
+    :width: 1000 px
+    
+The diagram discussed above is agnostic in terms of design, however, the chosen solution to implement the Datacenter Layer (Cisco ACI) provides the option of an MP-BGP/EVPN control plane extension between the sites called "Multi-pod". This allows for the data plane (VXLAN) to be extended between the sites as well, which translates to Layer 2 adjacency for end-devices connected to the same bridge domain. This setup has several technical requirements, mainly a pair of routers or Layer 3 switches at each site with OSPF reachability and multicast bidir support, plus a physical connection between these devices with maximum 50 milliseconds of RTT (round-trip time). The original proposal from the Cisco considered this setup as the baseline, however, this requires the DWDM units to provide dual 100G QSFP ports on a dedicated line card and wavelength, which by 2017 had an unknown estimated time of delivery by the DWDM vendor, therefore this design is presented as an option instead of a baseline.
+
+.. figure:: /_static/MainNet-phydiag-HLD-Physical-L3-IPN-WAN.jpg
+    :name: WAN L3 IPN
+    :width: 1000 px
+
+Summit to Base WAN - Optical (DWDM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. figure:: /_static/MainNet-phydiag-HLD-Physical-DWDM-WAN.jpg
+    :name: WAN DWDM
+    :width: 1000 px
+
+The diagram above provides a brief description of the optical layer implemented by the DWDM units for the inter-site connectivity. This is subject to changes and presented only as a reference, the source of truth for this setup can be found in LSE-78.
+
+Scalability
+-----------
+
+In the designs for each site, there are 2 major layers that provide the most port density both to users and systems, the Control and Campus Networks. These are Distribution/Access Layers and horizontal scalability is achieved by adding additional access/leaf switches, therefore the only limitation is the number of uplink ports available at the spine and distribution switches respectively. For the Control Network, the solution is modular therefore 2 spines with 1 100G line card are good enough for the construction period, but this can scale up to 4 of those in each chassis for a maximum of 128 100G ports. For the Campus Network, the solution is fixed therefore the maximum amount of access switches is 24 for the summit and 12 for the base. The aforementioned scalability numbers are considered sufficient to provide connectivity to all the baseline areas in the observatory design.
+
+In the case horizontal scalability is not enough, vertical scalability is feasible in both layers, adding Fabric Extenders to the leaf switches in the Control Network, and implementing stacking in the Campus Network (StackWise). The Control Network also scales vertically at the Border Leafs when connecting the non-ACI switches for layer 2 network extensions outside the Fabric. The Core and the WAN Edge Layers are can only scale horizontally if additional downlinks or Distribution/Access Layers are needed, up to the maximum available ports in each switch, however, this is not foreseen as the Core Layer, and mainly the WAN Edge is physically limited by the fiber circuits, ports and wavelengths available at each DWDM unit, especially for the 100G links which require special QSFP28 line cards and transceivers.
+
+Design Considerations
+---------------------
+
+* Rubin Observatory scope is limited to the implementation of the internal networks and fiber circuits at each site, but the WAN and extranet infrastructure is provided by NOIR Lab, this includes the internet access via the AURA Border Router and the DWDM units at each site, which are managed and monitored by REUNA as a partner and service provider to AURA.
+* The use of private BGP ASNs is necessary and the AS will be stripped off if necessary when peering with other groups or organizations.
+* Only Rubin Observatory's IT group and NOIR Lab are authorized to announce the observatory specific prefixes in the 139.229.0.0/16 range. Several internal groups will be assigned with subnets from such range, however, the advertisement of those subnets by any other AS not 19226 to the public internet table while not being explicitly authorized by Rubin Observatory/NOIR Lab is strictly prohibited and considered a criminal act.
+* As stated in LSE-449, the use of RFC 1918 IP addresses and several other private addressing ranges will be common, however, we must NOT announce bogon networks to any public BGP peers.
+* Complex but simple is good, complex but complicated is not. Any routing or switching configuration must be kept as simple as possible while covering all the observatory needs. Routing tables must be kept as small as possible and route summarization/filtering is expected whenever feasible and advisable.
+* The use of NAT is only for specific purposes and/or of the last resource and should not be used as a security mechanism to protect private networks. The use of UPnP-enabled devices is prohibited unless explicitly authorized, and only if UPnP can be completely disabled.
+* Port forwarding is a contingency mechanism and should not be considered common practice. If port forwarding is needed it may imply a network issue to be solved. Port forwarding is restricted, only allowed in emergency scenarios or where strictly necessary.
+* While the network infrastructure is required to be dual-stack IPv4/IPv6 ready, during the construction phase efforts will be centered in IPv4. IPv6 may be implemented in the future if there's a use case and if NOIR Lab provides Rubin Observatory with the necessary routable IPv6 segments. Some devices such as Windows systems use 6-to-4 tunnels natively if available, which is acceptable as such traffic is seen as IPv4 by the network infrastructure.
+* Standard protocols must be used whenever feasible and advisable. The use of proprietary or partially open protocols such as EIGRP should be avoided.
+* Unless limited by the hardware the links between the network devices should be 10G whenever feasible. The current price difference between single-mode and multi-mode links is negligible for most of the implementations, therefore multi-mode fiber should be used when required by the system and mostly inside the datacenter/computer room. Links to the outside of those rooms should be single-mode whenever possible to future-proof the link bandwidth scalability.
+* Equal-cost multipath (ECMP) routing must be implemented whenever possible but taking care to do proper traffic balancing. Per-packet load balancing over links with different bandwidth and/or jitter/latency parameters is not advisable as it may bring out-of-order packet issues. Cisco CEF must be disabled in some links to allow proper load balancing.
+* The routing and switching protocols to be implemented shall be configured beyond its default parameters to allow sub-second convergence upon hardware or link failures.
+* Modeling the network low-level design before implementation and/or major changes is recommended if technically feasible. Physical models are preferred but virtual models are acceptable if the operative system of the network devices can be fully emulated, at least for the protocols being implemented.
+
+Redundancy and High-Availability
+--------------------------------
+
+Redundancy is foreseen for most of the network infrastructure, especially at the summit site where several mission-critical systems are present. Access layer redundancy is achieved by connecting the end-devices to a pair of access/leaf switches in an active/standby or in an LACP active/active setup. Special care should be taken when using LACP as drivers on the end-devices may behave differently (e.g. bonding vs teaming) than the network devices upon hardware or link failures. LACP option mismatches are also common, therefore testing is advisable before moving LACP configurations into production.
+
+For most of the topology, both summit and base, network devices have their own control, management, and forwarding planes, however, Cisco ACI switches share a common control plane that lives in the APIC controller. High-availability is implemented by having APIC controller clusters, each cluster member having a shard copy of the DB; for single pod implementations 3 APIC controllers are the minimum advisable and for mult-pod implementations, it is 4, 3 at the main site and 1 at the second site. If the controllers are completely lost the control plane is lost as well but the ACI switches implement a local control logic which allows the packet forwarding to keep working, with the only limitation of not being able to implement configuration changes until part of the APIC cluster is recovered.
+
+Security
+--------
+
+The chosen solution supports a broad range of security mechanisms but not all of them will be implemented. The in-depth details of the security setup for the Rubin Observatory are sensitive and outside the scope of this document, however, these are the baseline requirements to be considered for a low-level design.
+
+* AAA must be implemented for each network device using a NAC service such as Cisco ISE.
+* The least-privilege principle must be considered when providing access to network devices. Administrator and system accounts shall only allow for the authorized commands to be run.
+* SSH keys authentication is preferred and the replacement of public SSH keys must be observed carefully.
+* If local passwords are needed these must be kept in a secure password management repository or system, with dual-factor authentication.
+* End-devices must be authenticated with 802.1x whenever possible. Each site must provide enough redundancy and/or high-availability for the NAC service to allow authentication even if the site is isolated.
+* Telnet and any other unencrypted management protocols are prohibited unless explicitly authorized and strictly necessary.
+* Bandwidth restriction and storm control features are acceptable to avoid starving links, both internal and NOIR Lab provided.
+* Blocking and/or restricting ports upon security violations is mandatory, plus triggering an immediate alert via a monitoring protocol or system to the IT group.
+
+Monitoring
+----------
+
+The SNMP protocol is the most common way to monitor network devices and is still the first and easiest option to implement monitoring along with ICMP. This service run queries to the devices using the Cisco-provided MIBs for hardware parameters such as CPU, RAM, and HDD load, plus additional parameters such as per-port load, environment variables such as inflow and internal temperatures, fan status, etc... depending on the level of granularity needed and agreed by the System Administrator in conjunction with the Network Engineer.
+
+Logging is done via Syslog at debugging level to the local Syslog collector of the site and alerts may be configured for specific messages such as interfaces being down or flapping, hardware issues, etc... as a backup of the SNMP monitoring. Simple ICMP monitoring to the management interface of the devices is advisable, as it tends to be faster than SNMP or even Syslog to trigger an alert.
+
+Custom bash or python scripts are also acceptable given the use-case, as well as the use of software abstraction layers that can query the units via SSH, special methods such as REST APIs or protocols such as NETCONF, to present that information to other services or databases.
+
+Management
+----------
+
+Several types of management methods are available for the chosen solution but the following must be implemented as the baseline:
+
+* **In-band management** access to the devices must be based on TACACS+ provided by a NAC service such as Cisco ISE, synchronized with the local domain controller of the site, and implementing differentiated levels of access. For IT network administrators, the regular domain account shall provide read-only access and the admin domain account shall provide full access to the controller.
+* **Out-Of-Band (OOB) management** is done via the service or management port, which is placed in a different and more protected network than in-band management.
+* **IPMI/BMC access** is provided by the onboard Cisco CIMC hardware, also placed in a different and more protected network than in-band management. It may or not be in the same as the OOB management segment.
+* A local administrator account is available for IT network administrators, but each device is configured to make use of it only in case of an emergency. No other local accounts must be present on the devices.
+
+Appendix
+========
+Terminology and acronyms
+------------------------
+
+.. include:: acronyms.rst 
+
 .. .. rubric:: References
 
 .. Make in-text citations with: :cite:`bibkey`.
