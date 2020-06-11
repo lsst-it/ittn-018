@@ -9,13 +9,19 @@ Acronym Description
 +--------+----------------------------------------------------+
 | AD     | Active Directory                                   |
 +--------+----------------------------------------------------+
+| API    | Application Programming Interface                  |
++--------+----------------------------------------------------+
 | APIC   | Application Policy Infrastructure Controller       |
++--------+----------------------------------------------------+
+| ASN    | Autonomous System Number                           |
 +--------+----------------------------------------------------+
 | AURA   | Associated Universities for Research in Astronomy  |
 +--------+----------------------------------------------------+
-| API    | Application Programming Interface                  |
-+--------+----------------------------------------------------+
 | BGP    | Border Gateway Protocol                            |
++--------+----------------------------------------------------+
+| BMC    | Baseboard Management Controller                    |
++--------+----------------------------------------------------+
+| CEF    | Cisco Express Forwarder                            |
 +--------+----------------------------------------------------+
 | CIMC   | Cisco Integrated Management Controller             |
 +--------+----------------------------------------------------+
@@ -25,11 +31,15 @@ Acronym Description
 +--------+----------------------------------------------------+
 | CTIO   | Cerro Tololo Inter-American Observatory            |
 +--------+----------------------------------------------------+
+| CLOS   | Topology created by Charles CLOS                   |
++--------+----------------------------------------------------+
 | DB     | Database                                           |
 +--------+----------------------------------------------------+
 | DWDM   | Dense-Wavelength Division Multiplexing             |
 +--------+----------------------------------------------------+
 | EVPN   | Ethernet Virtual Private Network                   |
++--------+----------------------------------------------------+
+| EIGRP  | Enhanced Interior Gateway Routing Protocol         |
 +--------+----------------------------------------------------+
 | HA     | High Availability                                  |
 +--------+----------------------------------------------------+
@@ -39,11 +49,15 @@ Acronym Description
 +--------+----------------------------------------------------+
 | ICD    | Interface Control Document                         |
 +--------+----------------------------------------------------+
-| IEEE   |Institute of Electrical and Electronics Engineers   |
+| IEEE   | Institute of Electrical and Electronics Engineers  |
++--------+----------------------------------------------------+
+| IS-IS  | Intermediate System to intermediate System         |
 +--------+----------------------------------------------------+
 | ISE    | Identity Service Engine                            |
 +--------+----------------------------------------------------+
 | IT     | Information Technology                             |
++--------+----------------------------------------------------+
+| IPMI   | Intelligent Platform Management Interface          |
 +--------+----------------------------------------------------+
 | LACP   | Link Aggregation Protocol                          |
 +--------+----------------------------------------------------+
@@ -56,6 +70,8 @@ Acronym Description
 | LSST   | Large Synoptic Survey Telescope                    |
 +--------+----------------------------------------------------+
 | MIB    | Management Information Base                        |
++--------+----------------------------------------------------+
+| NAT    | Network Address Translation                        |
 +--------+----------------------------------------------------+
 | NETCONF| Network Configuration Protocol                     |
 +--------+----------------------------------------------------+
@@ -70,6 +86,8 @@ Acronym Description
 | POE    | Power Over Ethernet                                |
 +--------+----------------------------------------------------+
 | OSPF   | Open Shortest Path First                           |
++--------+----------------------------------------------------+
+| SFP    | Small Form-Factor Pluggable                        |
 +--------+----------------------------------------------------+
 | SNMP   | Simple Network Management Protocol                 |
 +--------+----------------------------------------------------+
