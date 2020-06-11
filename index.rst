@@ -20,11 +20,11 @@ After acceptance this document may or not be under change control, and regardles
 Scope
 -----
 - Fulfill the current Network Infrastructure needs of the project and allow for future growth.
-- This document focuses only on INTERNAL Network Infrastructure in Chile, it does not cover any Long-Haul Networking (LHN) design beyond the interfaces that connect the internal network in Chile to such system. For information about the LHN design please refer to the latest release of `LSE-78 <https://docushare.lsst.org/docushare/dsweb/Get/LSE-78>`_.
+- This document focuses only on INTERNAL Network Infrastructure in Chile, it does not cover any Long-Haul Networking (LHN) design beyond the interfaces that connect the internal network in Chile to such system. For information about the LHN design please refer to the latest release of `LSE-78 <https://ls.st/LSE-78>`_.
 - While this document mentions firewalls from a functional perspective, it DOES NOT contain specific cybersecurity approaches and neither the firewall hardware.
 - This document DOES NOT cover requirements for services such as Wi-Fi and VoIP beyond the interfaces that connect the internal network in Chile to such systems. For information about the aforementioned services please refer to the following documents:
-  - `Wi-Fi Infrastructure High-Level Design (HLD) <https://ittn-016.lsst.io/>`_
-  - `VoIP Infrastructure High-Level Design (HLD) <https://ittn-017.lsst.io/>`_
+ - `Wi-Fi Infrastructure High-Level Design (HLD) <https://ittn-016.lsst.io/>`_
+ - `VoIP Infrastructure High-Level Design (HLD) <https://ittn-017.lsst.io/>`_
 - This document DOES NOT cover requirements for Network Infrastructure integration with other AURA projects.
 
 Assumptions and Caveats
@@ -35,10 +35,10 @@ Assumptions and Caveats
 
 Related Documents
 -----------------
-- LSE-78 LSST Observatory Network Design
-- LPM-122 Information Classification Policy
-- LSE-309 Summit to Base ITC Design
-- LSE-449 LSST IPv4 Addressing Policy
+- `LSE-78 LSST Observatory Network Design <https://ls.st/LSE-78>`_
+- `LPM-122 Information Classification Policy <https://ls.st/LPM-122>`_
+- `LSE-309 Summit to Base ITC Design <https://ls.st/LSE-309>`_
+- `LSE-449 LSST IPv4 Addressing Policy <https://ls.st/LSE-449>`_
 
 Technical Solution Overview
 ============
@@ -61,7 +61,7 @@ As the Rubin Observatory summit telescope building and the new base facilities a
 
 Chosen solution
 ---------------
-The decision rationale was a technical analysis of the project requirements by several vendors and distributors held in the 2015/2016 timeframe by the Tiger Team, out of which Cisco Systems was the chosen vendor for most of the LAN, Datacenter, Wi-Fi and VoIP infrastructure. This document will only focus on the LAN and Datacenter infrastructure which build up the backbone of the main network that will connect systems and end-users together. Due to the extensive nature of the solution, containing a very diverse group of devices, the list will be broken up by functional blocks.
+The decision rationale was a technical analysis of the project requirements by several vendors and distributors held in the 2015/2016 timeframe by the Tiger Team, out of which `Cisco Systems was the chosen vendor for most of the LAN, Datacenter, Wi-Fi and VoIP infrastructure <https://confluence.lsstcorp.org/download/attachments/41790141/Cisco%20ACI%20justification%20v2.docx?api=v2?>`_. This document will only focus on the LAN and Datacenter infrastructure which build up the backbone of the main network that will connect systems and end-users together. Due to the extensive nature of the solution, containing a very diverse group of devices, the list will be broken up by functional blocks.
 
 Campus Network Hardware
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -116,7 +116,7 @@ Part of the control network contains what is known as the data center layer, whi
 
 On a high-level, Cisco ACI is a solution that centralizes the control plane from all the switches in the data center (connected in a standard CLOS topology) into a controller known as APIC (Application Policy Infrastructure Controller), where an additional software abstraction layer orchestrates and automates the protocols which are part of the solution, mainly VXLAN for the data plane (also referred as overlay) and IS-IS for the routed topology used by VXLAN (also referred as underlay). MP-BGP is used to exchange routes between each switch in the topology; a REST API to integrate ACI into software pipelines is also provided by the controller. Any configuration changes to the data center network (i.e. Cisco ACI switches) are done in the APIC controllers, either via its graphical interface or via the REST API.
 
-VXLAN can be extended to other sites using MP-BGP and EVPN following vendor-specific setups, one of them being "multi-pod", which will be covered in section 3.2 as an option to extend layer 2 networks between sites. Cisco ACI is a topic on its own, please refer to the official ACI documentation repository at https://www.cisco.com/c/en/us/support/cloud-systems-management/application-policy-infrastructure-controller-apic/tsd-products-support-series-home.html
+VXLAN can be extended to other sites using MP-BGP and EVPN following vendor-specific setups, one of them being "multi-pod", which will be covered in section 3.2 as an option to extend layer 2 networks between sites. Cisco ACI is a topic on its own, please refer to the official `ACI documentation repository <https://www.cisco.com/c/en/us/support/cloud-systems-management/application-policy-infrastructure-controller-apic/tsd-products-support-series-home.html>`_
 
 **APIC Controllers APIC-SERVER-L2:** As mentioned before, the APIC controllers are servers running the Cisco ACI software that implements the control plane for all the datacenter switches and plus the REST API. These controllers are based on Cisco's UCS M220 M4 servers, 3 for the summit, and currently only 1 for the base site, a situation that may change in the future depending on the scalability plans of the project and if a multi-pod setup is implemented between the summit and base sites. Please refer to section 3.2 for more information on multi-pod.
 
@@ -224,7 +224,7 @@ The design shown in the diagram above represents the overall project network at 
 
 The design will be described up-down, starting at the border of the project's network which is the **AURA Border Router**. This router is what AURA and the NOIR Lab IT group (ex-CISS) call "the backbone" of the Chilean AURA network, as it aggregates the traffic from all the AURA managed projects before routing to the commodity internet links, and educational networks. Rubin Observatory will rely on the Aura Border Router for the announcement of our IP prefixes via BGP on the AS19226, currently summarized and announced as 139.229.0.0/16. Rubin Observatory has assigned a good portion of that space as specified in LSE-449, and the AURA Border Router shall be able to determine which network is available behind which device when routing towards Rubin Observatory, either via static or dynamic routing; that specific configuration is outside the scope of the Rubin Observatory IT group.
 
-The first layer of the Rubin Observatory network in Chile is the **Internet Edge**, also known as the Border Network, where a group of 3 redundant firewalls is connected to the AURA Border Router doing default routing towards the SVIs provided by NOIR Lab for extranet access, which as mentioned before may be static or dynamic depending on the configuration applied by the aforementioned group. This layer groups all the security devices protecting the internal network in different stages and setups, which are not openly discussed in this document as its sensitive information following LPM-122, but on a high-level there's a firewall cluster to aggregate remote access VPN connections, connecting to an internal VPN DMZ segment for additional security enforcements, then there's a guest firewall cluster to provide internet access to guests and contractors visiting our sites, monitoring their activity and preventing access to the intranet, and finally there's a main border firewall cluster which aggregates all the traffic coming in and out the internal networks in Chile, implementing our main security policies using several features, which are sensitive and outside the scope of this document; this is the main entry point for internal networked resources.
+The first layer of the Rubin Observatory network in Chile is the **Internet Edge**, also known as the Border Network, where a group of 3 redundant firewalls is connected to the AURA Border Router doing default routing towards the SVIs provided by NOIR Lab for extranet access, which as mentioned before may be static or dynamic depending on the configuration applied by the aforementioned group. This layer groups all the security devices protecting the internal network in different stages and setups, which are not openly discussed in this document as its sensitive information following `LPM-122 <https://ls.st/LPM-122>`_, but on a high-level there's a firewall cluster to aggregate remote access VPN connections, connecting to an internal VPN DMZ segment for additional security enforcements, then there's a guest firewall cluster to provide internet access to guests and contractors visiting our sites, monitoring their activity and preventing access to the intranet, and finally there's a main border firewall cluster which aggregates all the traffic coming in and out the internal networks in Chile, implementing our main security policies using several features, which are sensitive and outside the scope of this document; this is the main entry point for internal networked resources.
 
 These firewalls are aggregated in separate segments and VRFs -depending on the nature of its traffic- on a pair of leaf switches (also referred as "border leafs") corresponding to the datacenter layer discussed later, but it's important to mention that these switches are multi-functional and key in the design, as they not only provide the links towards the Internet Edge but also interconnect the 3 major internal blocks of the Chilean intranet: the Datacenter, Core and Campus layers.
 
