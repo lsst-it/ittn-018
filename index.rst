@@ -20,11 +20,11 @@ After acceptance this document may or not be under change control, and regardles
 Scope
 -----
 - Fulfill the current Network Infrastructure needs of the project and allow for future growth.
-- This document focuses only on INTERNAL Network Infrastructure in Chile, it does not cover any Long-Haul Networking (LHN) design beyond the interfaces that connect the internal network in Chile to such system. For information about the LHN design please refer to the latest release of LSE-78.
+- This document focuses only on INTERNAL Network Infrastructure in Chile, it does not cover any Long-Haul Networking (LHN) design beyond the interfaces that connect the internal network in Chile to such system. For information about the LHN design please refer to the latest release of `LSE-78 <https://docushare.lsst.org/docushare/dsweb/Get/LSE-78>`_.
 - While this document mentions firewalls from a functional perspective, it DOES NOT contain specific cybersecurity approaches and neither the firewall hardware.
 - This document DOES NOT cover requirements for services such as Wi-Fi and VoIP beyond the interfaces that connect the internal network in Chile to such systems. For information about the aforementioned services please refer to the following documents:
-  - Wi-Fi Infrastructure High-Level Design (HLD)
-  - VoIP Infrastructure High-Level Design (HLD)
+  - `Wi-Fi Infrastructure High-Level Design (HLD) <https://ittn-016.lsst.io/>`_
+  - `VoIP Infrastructure High-Level Design (HLD) <https://ittn-017.lsst.io/>`_
 - This document DOES NOT cover requirements for Network Infrastructure integration with other AURA projects.
 
 Assumptions and Caveats
